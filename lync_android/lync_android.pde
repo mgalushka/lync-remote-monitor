@@ -24,31 +24,42 @@ APWidgetContainer widgetContainer;
 APEditText userIdField;
 
 DefaultHttpClient httpClient;
+
+// registration URL in push service
+// -H application-id:value-from-backendless-console
+// -H secret-key:value-from-backendless-console
+// -H Content-Type:application/json
+// 
+String PUSH_SERVICE_REGISTRATION = "https://api.backendless.com/v1/messaging/registrations";
+
+String REGISTER_DEVICE = "http://192.168.1.103/omxplayer-web-controls-php/open.php?path=";
 String ROOT = "http://192.168.1.103/omxplayer-web-controls-php/open.php?path=";
 
+// Google Project Number: 302299434458 
 
 KetaiList filesystemList;
 ArrayList lst = new ArrayList();
 
 String USER_ID = "username";
+String userId = null;
 
 void setup() {
 
   //To load settings
   SharedPreferences settings = getSharedPreferences("UserId", Activity.MODE_PRIVATE);
-  String userId = settings.getString(USER_ID);
+  userId = settings.getString(USER_ID);
 
   try
   {
     httpClient = new DefaultHttpClient();
-
-    widgetContainer = new APWidgetContainer(this); //create new container for widgets
-    userIdField = new APEditText(20, 100, 150, 50); //create a textfield from x- and y-pos., width and height
-    widgetContainer.addWidget(userIdField); //place textField in container
   } 
   catch( Exception e ) { 
     e.printStackTrace();
   }
+
+  widgetContainer = new APWidgetContainer(this); //create new container for widgets
+  userIdField = new APEditText(20, 100, 150, 50); //create a textfield from x- and y-pos., width and height
+  widgetContainer.addWidget(userIdField); //place textField in container
 
   background(0);  
   rectMode(CENTER);
@@ -64,9 +75,12 @@ void exit() {
 void draw() {
   background(255);
   fill(0);
-  //filesystemList = new KetaiList(this, lst);
 
-  text(textField.getText(), 10, 10); //display the text in the text field
+  if (userId == null) {
+  }
+  else {
+    text(userId, 10, 10); //display the text in the text field
+  }
 }
 
 void keyPressed() {
@@ -80,7 +94,7 @@ void mousePressed() {
   }
 }
 
-void sendToServer(String path) {
+void sendToServer0(String path) {
   try {
     println("Send get request for path: " + ROOT);
     HttpGet httpGet   = new HttpGet(ROOT);
@@ -121,10 +135,6 @@ void sendToServer(String command) {
 
     String json = EntityUtils.toString(entity);
     println ("json = " + json);
-
-    FileSystem fs = gson.fromJson(json, FileSystem.class);
-
-    println (fs);
 
     //if ( entity != null ) entity.writeTo( System.out );
     //if ( entity != null ) entity.consumeContent();
