@@ -18,6 +18,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.gson.Gson;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 
 APWidgetContainer widgetContainer; 
@@ -46,8 +47,8 @@ String userId = null;
 void setup() {
 
   //To load settings
-  SharedPreferences settings = getSharedPreferences("UserId", Activity.MODE_PRIVATE);
-  userId = settings.getString(USER_ID);
+  SharedPreferences settings = ((Activity) this).getSharedPreferences("UserId", Activity.MODE_PRIVATE);
+  userId = settings.getString(USER_ID, null);
 
   try
   {
