@@ -5,3 +5,13 @@ Workflow:
 
 3. Lync plugin requests service for device id based on user id
 4. Lync publishes messages via REST interface??? (still need to check how to do this properly)
+https://android.googleapis.com/gcm/send
+Content-Type:application/json
+Authorization:key=XXX
+
+{
+  "registration_ids" : ["YYY << received from service"],
+  "data" : {
+		"message": "text"
+  },
+}
