@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import com.google.android.gms.gcm.*;
 
 APWidgetContainer widgetContainer; 
 APEditText userIdField;
@@ -43,6 +44,8 @@ ArrayList lst = new ArrayList();
 
 String USER_ID = "username";
 String userId = null;
+int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
 
 void setup() {
 
@@ -94,6 +97,33 @@ void mousePressed() {
     e.printStackTrace();
   }
 }
+
+void retrieveRegistrationId(){
+  if (checkPlayServices()) {
+        gcm = GoogleCloudMessaging.getInstance(this);
+        regid = getRegistrationId(context);
+
+        if (regid.isEmpty()) {
+            registerInBackground();
+        }
+    } 
+}
+  
+  
+boolean checkPlayServices() {
+    int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+    if (resultCode != ConnectionResult.SUCCESS) {
+        if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+            GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                    PLAY_SERVICES_RESOLUTION_REQUEST).show();
+        } else {
+            print("This device is not supported.");
+            finish();
+        }
+        return false;
+    }
+    return true;
+}  
 
 void sendToServer0(String path) {
   try {
