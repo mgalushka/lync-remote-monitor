@@ -1,9 +1,8 @@
 <?php
 
-	$mysql_host = "localhost";
-	$mysql_port = 3306;
-	$mysql_db = "lync_monitor";
-	$mysql_user = "root";
-	$mysql_password = "";
+	$mysql_url = '127.0.0.1:3306';
+	$mysql_db = 'lync_monitor';
+	$mysql_user = 'root';
+	$mysql_password = '';
 	
 ?>

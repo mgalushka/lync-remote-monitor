@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response xmlns="http://localhost/lync/register.php/lync/register.php">
+   <error>Cannot select MySQL database: No database selected</error>
+</Response>
