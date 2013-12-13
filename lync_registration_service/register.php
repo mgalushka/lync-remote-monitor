@@ -1,31 +1,24 @@
 <?php
-	include 'config.php';
+	include 'common.php';
 
-	// Connecting, selecting database
-	$link = mysql_connect($mysql_host.':'.$mysql_port, $mysql_user, $mysql_password)
-		or die('Could not connect: ' . mysql_error());
+	$userId = mysql_real_escape_string($_POST["userId"]);
+	if(!empty($userId)){
 		
-	echo 'Connected successfully';
-	mysql_select_db($mysql_db) or die('Could not select database');
-
-	// Performing SQL query
-	$query = 'SELECT * FROM devices';
-	$result = mysql_query($query) or die('Query failed: ' . mysql_error());
-
-	// Printing results in HTML
-	echo "<table>\n";
-	while ($line = mysql_fetch_array($result, MYSQL_ASSOC)) {
-		echo "\t<tr>\n";
-		foreach ($line as $col_value) {
-			echo "\t\t<td>$col_value</td>\n";
+		$link = db_connect();	
+			
+		// Performing SQL query
+		$query = sprintf('insert into devices (user_id) values (%s)', $userId);
+		$result = mysql_query($query);
+		if(!$result){
+			echo '{"error" : "Cannot execute SQL: '.mysql_error(). '"}';
+			die('Could not connect: ' . mysql_error());
 		}
-		echo "\t</tr>\n";
+
+		echo '{"status" : "OK"}';
+
+		db_clean($link);
 	}
-	echo "</table>\n";
-
-	// Free resultset
-	mysql_free_result($result);
-
-	// Closing connection
-	mysql_close($link);
+	else{
+		echo '{"error" : "UserId is empty"}';
+	}
 ?>
