@@ -22,6 +22,7 @@ import android.app.*;
 import android.content.*; 
 import com.google.android.gms.gcm.*;
 import android.content.pm.*;
+import android.os.*;
 
 APWidgetContainer widgetContainer; 
 APEditText userIdField;
@@ -31,6 +32,8 @@ DefaultHttpClient httpClient;
 
 GoogleCloudMessaging gcm;
 String regid;
+
+Context context;
 
 // registration URL in push service
 // -H application-id:value-from-backendless-console
@@ -58,6 +61,8 @@ String PROPERTY_APP_VERSION = "appVersion";
 
 int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
+String registrationStatus = "";
+
 int W, H;
 
 void setup() {
@@ -84,6 +89,8 @@ void setup() {
   widgetContainer.addWidget(userIdField); //place textField in container
   widgetContainer.addWidget(registerPhoneBtn); //place textField in container
 
+
+  context = this.getApplicationContext();
   //background(0);  
   //rectMode(CENTER);
 }
@@ -105,6 +112,9 @@ void draw() {
   else {
     //text(userId, 10, 10); //display the text in the text field
   }
+
+  textSize(20);
+  text(registrationStatus, 10, 10);
 }
 
 void onClickWidget(APWidget widget) {
@@ -131,6 +141,9 @@ void retrieveRegistrationId() {
   if (checkPlayServices()) {
     gcm = GoogleCloudMessaging.getInstance(this);
     regid = getRegistrationId(this.getApplicationContext());
+
+    print ("RegistrationId: " + regid);
+    registrationStatus = regid;
 
     if (regid.isEmpty()) {
       registerInBackground();
@@ -179,35 +192,58 @@ private SharedPreferences getGCMPreferences(Context context) {
   return ((Activity) this).getSharedPreferences("Lync", Activity.MODE_PRIVATE);
 }
 
-String registerInBackground() {
-  String msg = "";
-  try {
-    if (gcm == null) {
-      gcm = GoogleCloudMessaging.getInstance(this.getApplicationContext());
+void registerInBackground() {
+  AsyncTask a = new AsyncTask() {
+
+    protected String doInBackground(Object ... params) {
+
+      String msg = "";
+      print("start background registration");
+      try {
+        if (gcm == null) {
+          print("retrieving GCM instance");
+          gcm = GoogleCloudMessaging.getInstance(context);
+          print("GCM instance retrieved");
+        }
+        print("Requesting registration");
+        regid = gcm.register(SENDER_ID);
+        msg = "Device registered, registration ID=" + regid;
+
+        print(msg);
+        
+        registrationStatus = msg;
+
+        // You should send the registration ID to your server over HTTP,
+        // so it can use GCM/HTTP or CCS to send messages to your app.
+        // The request to your server should be authenticated if your app
+        // is using accounts.
+        sendRegistrationIdToBackend();
+
+        // For this demo: we don't need to send it because the device
+        // will send upstream messages to a server that echo back the
+        // message using the 'from' address in the message.
+
+        // Persist the regID - no need to register again.
+        storeRegistrationId(context, regid);
+      } 
+      catch (IOException ex) {
+        msg = "Error :" + ex.getMessage();
+        // If there is an error, don't just keep trying to register.
+        // Require the user to click a button again, or perform
+        // exponential back-off.
+
+        print ("Error: " + msg);
+        registrationStatus = msg;
+      }
+      return msg;
     }
-    regid = gcm.register(SENDER_ID);
-    msg = "Device registered, registration ID=" + regid;
 
-    // You should send the registration ID to your server over HTTP,
-    // so it can use GCM/HTTP or CCS to send messages to your app.
-    // The request to your server should be authenticated if your app
-    // is using accounts.
-    sendRegistrationIdToBackend();
-
-    // For this demo: we don't need to send it because the device
-    // will send upstream messages to a server that echo back the
-    // message using the 'from' address in the message.
-
-    // Persist the regID - no need to register again.
-    storeRegistrationId(this.getApplicationContext(), regid);
-  } 
-  catch (IOException ex) {
-    msg = "Error :" + ex.getMessage();
-    // If there is an error, don't just keep trying to register.
-    // Require the user to click a button again, or perform
-    // exponential back-off.
-  }
-  return msg;
+    protected void onPostExecute(String msg) {
+      print(msg);
+      registrationStatus = msg;
+    }
+  };
+  a.execute(null, null, null);
 }
 
 
